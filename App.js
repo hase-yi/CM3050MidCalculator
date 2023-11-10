@@ -19,7 +19,7 @@ export default function App() {
 		if (readyToReplace) {
 			return value;
 		} else {
-			setAnswerValue(answerValue + value);
+			return parseFloat(answerValue.toString() + value.toString())
 		}
 	}
 
@@ -52,8 +52,8 @@ export default function App() {
 
 		// check is the user is pressing a number
 		if (!isNaN(value)) {
-		
 			setAnswerValue(handleNumber(value));
+			setReadyToReplace(false);
 			setIsAc(false);
 		} else if (value === 'C') { //check if the user is pressing C
 			setAnswerValue(0);
@@ -90,6 +90,9 @@ export default function App() {
 			setAnswerValue(answerValue * -1);
 		} else if (value === '%') {
 			setAnswerValue(answerValue * 0.01);
+		} else if (value === '.') {
+			setAnswerValue(answerValue + '.');
+			setReadyToReplace(false);
 		} 
 	}
 
