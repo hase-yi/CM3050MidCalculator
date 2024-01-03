@@ -73,6 +73,7 @@ export default function App() {
 				// Finish the current calculation
 				let result = calculateEquals();
 				setMemoryValue(result)
+				setAnswerValue(result);
 			} else {
 				// moving the previous answer to memory to be used in the next calculation
 				setMemoryValue(answerValue);
