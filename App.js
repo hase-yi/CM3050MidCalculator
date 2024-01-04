@@ -64,29 +64,32 @@ export default function App () {
       setReadyToReplace(false)
       setIsAc(false)
 
-      // check if this is the first number
+      // Check if this is the first number entered
       if (memoryValue === 0 && operatorValue === 0) {
+        // If so, begin a new history
         setCurrentHistory(`${newValue}`)
       }
     } else if (value === 'C') {
-      //check if the user is pressing C
+      // Check if the user is pressing C
       setAnswerValue(0)
       setReadyToReplace(true)
       setIsAc(true)
     } else if (value === 'AC') {
-      //check if the user is pressing AC
+      // Check if the user is pressing AC
+      // Reset everything
       setAnswerValue(0)
       setMemoryValue(0)
       setOperatorValue(0)
       setReadyToReplace(true)
       setCurrentHistory('0')
     } else if (operators.includes(value)) {
-      // check if the user is pressing an operator
+      // Check if the user is pressing an operator
 
       // The user continues a calculation but does not press `=` between. e.g 1 + 3 / 6 + 2
       if (operatorValue !== 0) {
         if (operators.includes(lastPressed)) {
           // The user keeps pressing the operator button without entering a number
+          // Do nothing
         } else {
           // Finish the current calculation
           let result = calculateEquals()
@@ -95,26 +98,33 @@ export default function App () {
           const newCurrentHistory = `${currentHistory} ${operatorValue} ${answerValue}`
           setCurrentHistory(newCurrentHistory)
 
+          // Set memory and answer to the result
           setMemoryValue(result)
           setAnswerValue(result)
         }
       } else {
-        // moving the previous answer to memory to be used in the next calculation
+        // Moving the previous answer to memory to be used in the next calculation
+        // If the user is pressing '=' next this will lead to the number being added to
+        // itself, but that's in line with for example the iOS calculator
         setMemoryValue(answerValue)
       }
 
       setReadyToReplace(true)
       setOperatorValue(value)
     } else if (value === '=') {
+      // The user is pressing `=`
       const result = calculateEquals()
 
+      // Update history, but only if the user is not pressing `=` over and over again
       if (lastPressed != '=') {
+        // Special case: the user presses `=` without entering an operator and a second number
         const newCurrentHistory =
           operatorValue != 0
             ? `${currentHistory} ${operatorValue} ${answerValue} = ${result}`
             : `${answerValue} = ${result}`
         setCurrentHistory(newCurrentHistory)
 
+        // Pop the oldest history and add the new one
         const newHistory = [`${newCurrentHistory}`, ...history]
         if (newHistory.length > 3) {
           newHistory.pop() // Keep only the last three calculations
@@ -123,16 +133,22 @@ export default function App () {
         setCurrentHistory('0')
       }
 
-      // Update the answer
+      // Update the answer and reset the memory and operator
       setAnswerValue(result)
       setMemoryValue(0)
       setOperatorValue(0)
       setReadyToReplace(true)
     } else if (value === '+/-') {
+      // Check if the user is pressing +/-
       setAnswerValue(answerValue * -1)
     } else if (value === '%') {
+      // Check if the user is pressing %
       setAnswerValue(answerValue * 0.01)
     } else if (value === '.') {
+      // Check if the user is pressing .
+
+      // Check if the user is pressing . not after another . or if
+      // a float number is already entered
       if (lastPressed != '.' && !answerValue.toString().includes('.')) {
         setAnswerValue(answerValue + '.')
         setReadyToReplace(false)
@@ -145,6 +161,7 @@ export default function App () {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
+        {/* Populate the history */}
         <View style={styles.historyField}>
           {[...history].reverse().map((line, index) => (
             <Text key={index} style={styles.historyText}>
@@ -154,6 +171,7 @@ export default function App () {
         </View>
 
         <View style={styles.resultField}>
+          {/* The result should always be just one line */}
           <Text numberOfLines={1} style={styles.resultFieldText}>
             {answerValue}
           </Text>
@@ -163,6 +181,7 @@ export default function App () {
             style={[styles.button, styles.darkButton]}
             onPress={() => buttonPressed('C')}
           >
+            {/* Check whether this is the AC or C button now */}
             <Text style={styles.buttonText}>{isAc ? 'AC' : 'C'}</Text>
           </TouchableOpacity>
 
@@ -180,6 +199,7 @@ export default function App () {
             <Text style={styles.buttonText}>%</Text>
           </TouchableOpacity>
 
+          {/* The button is highlighted if it was the last button pressed */}
           <TouchableOpacity
             style={[
               styles.button,
@@ -215,6 +235,7 @@ export default function App () {
             <Text style={styles.buttonText}>9</Text>
           </TouchableOpacity>
 
+          {/* The button is highlighted if it was the last button pressed */}
           <TouchableOpacity
             style={[
               styles.button,
@@ -249,6 +270,7 @@ export default function App () {
             <Text style={styles.buttonText}>6</Text>
           </TouchableOpacity>
 
+          {/* The button is highlighted if it was the last button pressed */}
           <TouchableOpacity
             style={[
               styles.button,
@@ -283,6 +305,7 @@ export default function App () {
             <Text style={styles.buttonText}>3</Text>
           </TouchableOpacity>
 
+          {/* The button is highlighted if it was the last button pressed */}
           <TouchableOpacity
             style={[
               styles.button,
