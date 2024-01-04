@@ -18,6 +18,9 @@ export default function App () {
   const [memoryValue, setMemoryValue] = useState(0)
   const [operatorValue, setOperatorValue] = useState(0)
   const [isAc, setIsAc] = useState(true)
+  const [history, setHistory] = useState([])
+  const [currentHistory, setCurrentHistory] = useState('0')
+  const [lastPressed, setLastPressed] = useState('')
 
   const operators = ['+', '-', 'x', '/']
 
@@ -54,31 +57,47 @@ export default function App () {
   }
 
   function buttonPressed (value) {
-    // alert("button pressed: " + value);
-
-    // check is the user is pressing a number
     if (!isNaN(value)) {
-      setAnswerValue(handleNumber(value))
+      // check is the user is pressing a number
+      const newValue = handleNumber(value)
+      setAnswerValue(newValue)
       setReadyToReplace(false)
       setIsAc(false)
+
+      // check if this is the first number
+      if (memoryValue === 0 && operatorValue === 0) {
+        setCurrentHistory(`${newValue}`)
+      }
     } else if (value === 'C') {
       //check if the user is pressing C
       setAnswerValue(0)
       setReadyToReplace(true)
       setIsAc(true)
     } else if (value === 'AC') {
-      //check if the user is pressing AC{
+      //check if the user is pressing AC
       setAnswerValue(0)
       setMemoryValue(0)
       setOperatorValue(0)
       setReadyToReplace(true)
+      setCurrentHistory('0')
     } else if (operators.includes(value)) {
-      // The user continus a calucaltion but does not press = inbetween. e.g 1 + 3 / 6 + 2
+      // check if the user is pressing an operator
+
+      // The user continues a calculation but does not press `=` between. e.g 1 + 3 / 6 + 2
       if (operatorValue !== 0) {
-        // Finish the current calculation
-        let result = calculateEquals()
-        setMemoryValue(result)
-        setAnswerValue(result)
+        if (operators.includes(lastPressed)) {
+          // The user keeps pressing the operator button without entering a number
+        } else {
+          // Finish the current calculation
+          let result = calculateEquals()
+
+          // Update history
+          const newCurrentHistory = `${currentHistory} ${operatorValue} ${answerValue}`
+          setCurrentHistory(newCurrentHistory)
+
+          setMemoryValue(result)
+          setAnswerValue(result)
+        }
       } else {
         // moving the previous answer to memory to be used in the next calculation
         setMemoryValue(answerValue)
@@ -87,7 +106,25 @@ export default function App () {
       setReadyToReplace(true)
       setOperatorValue(value)
     } else if (value === '=') {
-      setAnswerValue(calculateEquals())
+      const result = calculateEquals()
+
+      if (lastPressed != '=') {
+        const newCurrentHistory =
+          operatorValue != 0
+            ? `${currentHistory} ${operatorValue} ${answerValue} = ${result}`
+            : `${answerValue} = ${result}`
+        setCurrentHistory(newCurrentHistory)
+
+        const newHistory = [`${newCurrentHistory}`, ...history]
+        if (newHistory.length > 3) {
+          newHistory.pop() // Keep only the last three calculations
+        }
+        setHistory(newHistory)
+        setCurrentHistory('0')
+      }
+
+      // Update the answer
+      setAnswerValue(result)
       setMemoryValue(0)
       setOperatorValue(0)
       setReadyToReplace(true)
@@ -96,14 +133,26 @@ export default function App () {
     } else if (value === '%') {
       setAnswerValue(answerValue * 0.01)
     } else if (value === '.') {
-      setAnswerValue(answerValue + '.')
-      setReadyToReplace(false)
+      if (lastPressed != '.' && !answerValue.toString().includes('.')) {
+        setAnswerValue(answerValue + '.')
+        setReadyToReplace(false)
+      }
     }
+
+    setLastPressed(value)
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
+        <View style={styles.historyField}>
+          {[...history].reverse().map((line, index) => (
+            <Text key={index} style={styles.historyText}>
+              {line}
+            </Text>
+          ))}
+        </View>
+
         <View style={styles.resultField}>
           <Text numberOfLines={1} style={styles.resultFieldText}>
             {answerValue}
@@ -132,7 +181,12 @@ export default function App () {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.colouredButton]}
+            style={[
+              styles.button,
+              lastPressed === '/'
+                ? styles.highlightButton
+                : styles.colouredButton
+            ]}
             onPress={() => buttonPressed('/')}
           >
             <Text style={styles.buttonText}>/</Text>
@@ -162,7 +216,12 @@ export default function App () {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.colouredButton]}
+            style={[
+              styles.button,
+              lastPressed === 'x'
+                ? styles.highlightButton
+                : styles.colouredButton
+            ]}
             onPress={() => buttonPressed('x')}
           >
             <Text style={styles.buttonText}>x</Text>
@@ -191,7 +250,12 @@ export default function App () {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.colouredButton]}
+            style={[
+              styles.button,
+              lastPressed === '-'
+                ? styles.highlightButton
+                : styles.colouredButton
+            ]}
             onPress={() => buttonPressed('-')}
           >
             <Text style={styles.buttonText}>-</Text>
@@ -220,7 +284,12 @@ export default function App () {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.colouredButton]}
+            style={[
+              styles.button,
+              lastPressed === '+'
+                ? styles.highlightButton
+                : styles.colouredButton
+            ]}
             onPress={() => buttonPressed('+')}
           >
             <Text style={styles.buttonText}>+</Text>
@@ -296,7 +365,20 @@ const styles = StyleSheet.create({
   darkButton: {
     backgroundColor: 'dimgray'
   },
+  highlightButton: {
+    backgroundColor: 'orange'
+  },
   longButton: {
     width: buttonWidth * 2 + 5
+  },
+  historyField: {
+    alignSelf: 'stretch',
+    paddingHorizontal: 20,
+    marginBottom: 20
+  },
+  historyText: {
+    color: 'white',
+    fontSize: 20,
+    textAlign: 'right'
   }
 })
