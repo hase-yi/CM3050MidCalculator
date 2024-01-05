@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar'
 import {
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import { useState } from 'react'
 
 const screenWidth = Dimensions.get('window').width
 const buttonWidth = (screenWidth - 50) / 4
+const textSize = buttonWidth / 3
 
 export default function App () {
   const [answerValue, setAnswerValue] = useState(0)
@@ -340,7 +340,6 @@ export default function App () {
             <Text style={styles.buttonText}>=</Text>
           </TouchableOpacity>
         </View>
-        <StatusBar style='light content' />
       </View>
     </SafeAreaView>
   )
@@ -375,11 +374,13 @@ const styles = StyleSheet.create({
     height: buttonWidth,
     margin: 5,
     borderRadius: buttonWidth / 2,
-    padding: 20
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   buttonText: {
     color: 'white',
-    fontSize: 30,
+    fontSize: textSize,
     textAlign: 'center'
   },
   colouredButton: {
